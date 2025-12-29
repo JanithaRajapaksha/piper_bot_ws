@@ -294,11 +294,11 @@
     </inertial>
     <visual>
       <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
+        xyz="-0.035 -0.085 0.04"
+        rpy="0 0 1.5708" />
       <geometry>
-        <mesh
-          filename="file://$(find piper_description)/meshes/link6.STL" />
+        <mesh 
+          filename="file://$(find piper_description)/meshes/ZED.STL" scale="0.001 0.001 0.001"/>
       </geometry>
       <material
         name="">
@@ -308,14 +308,15 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
+        xyz="-0.035 -0.085 0.04"
+        rpy="0 0 1.5708" />
       <geometry>
         <mesh
-          filename="file://$(find piper_description)/meshes/link6.STL" />
+          filename="file://$(find piper_description)/meshes/ZED.STL" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
   </link>
+
   <joint
     name="joint6"
     type="revolute">
@@ -620,6 +621,32 @@
           <state_interface name="velocity"/>
       </joint>
   </ros2_control>
+
+  <gazebo reference="link6">
+    <sensor name="camera" type="depth">
+      <pose>0.1 0 0 1.5708 -1.5708 -1.5708</pose>
+      <!-- <pose>-0.035 -0.085 0.04 0 0 -1.5708</pose> -->
+      <visualize>true</visualize>
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.05</near>
+          <far>8.0</far>
+        </clip>
+      </camera>
+      <plugin name="depth_camera" filename="libgazebo_ros_camera.so">
+        <frame_name>link6</frame_name>
+        <min_depth>0.1</min_depth>
+        <max_depth>100.0</max_depth>
+      </plugin>
+    </sensor>
+  </gazebo>
 
 <!-- gazebo -->
   <gazebo>
