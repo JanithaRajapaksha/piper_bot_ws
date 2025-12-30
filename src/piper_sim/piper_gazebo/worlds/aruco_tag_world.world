@@ -1,0 +1,829 @@
+<sdf version='1.7'>
+  <world name='default'>
+    <light name='sun' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose>0 0 10 0 -0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <model name='ground_plane'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>65535</collide_bitmask>
+              <ode/>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/>
+    <physics type='ode'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>1</shadows>
+    </scene>
+    <audio>
+      <device>default</device>
+    </audio>
+    <wind/>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <latitude_deg>0</latitude_deg>
+      <longitude_deg>0</longitude_deg>
+      <elevation>0</elevation>
+      <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+    <model name='piper'>
+      <joint name='fixed_base_joint' type='fixed'>
+        <pose relative_to='__model__'>0 0 0 0 -0 0</pose>
+        <parent>world</parent>
+        <child>base_link</child>
+      </joint>
+      <link name='base_link'>
+        <pose relative_to='fixed_base_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.004736 2.6e-05 0.041452 0 -0 0</pose>
+          <mass>1.02</mass>
+          <inertia>
+            <ixx>0.00267433</ixx>
+            <ixy>-7.3e-07</ixy>
+            <ixz>-0.00017389</ixz>
+            <iyy>0.00282612</iyy>
+            <iyz>4e-07</iyz>
+            <izz>0.00089624</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/base_link.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='base_link_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/base_link.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint1' type='revolute'>
+        <pose relative_to='base_link'>0 0 0.123 0 -0 0</pose>
+        <parent>base_link</parent>
+        <child>link1</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-2.618</lower>
+            <upper>2.168</upper>
+            <effort>100</effort>
+            <velocity>5</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link1'>
+        <pose relative_to='joint1'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0.000122 0.000105 -0.004386 0 -0 0</pose>
+          <mass>0.71</mass>
+          <inertia>
+            <ixx>0.00048916</ixx>
+            <ixy>-3.6e-07</ixy>
+            <ixz>-2.24e-06</ixz>
+            <iyy>0.00040472</iyy>
+            <iyz>-2.42e-06</iyz>
+            <izz>0.00043982</izz>
+          </inertia>
+        </inertial>
+        <collision name='link1_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link1.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link1_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link1.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint2' type='revolute'>
+        <pose relative_to='link1'>0 0 0 1.5708 -0.10095 3.14159</pose>
+        <parent>link1</parent>
+        <child>link2</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>3.14</upper>
+            <effort>100</effort>
+            <velocity>5</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link2'>
+        <pose relative_to='joint2'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0.198666 -0.010927 0.001421 0 -0 0</pose>
+          <mass>1.17</mass>
+          <inertia>
+            <ixx>0.00116918</ixx>
+            <ixy>-0.00180037</ixy>
+            <ixz>0.00025146</ixz>
+            <iyy>0.0678538</iyy>
+            <iyz>-4.55e-06</iyz>
+            <izz>0.0677449</izz>
+          </inertia>
+        </inertial>
+        <collision name='link2_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link2.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link2_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link2.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint3' type='revolute'>
+        <pose relative_to='link2'>0.28503 0 0 0 0 -1.759</pose>
+        <parent>link2</parent>
+        <child>link3</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-2.967</lower>
+            <upper>0</upper>
+            <effort>100</effort>
+            <velocity>5</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link3'>
+        <pose relative_to='joint3'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.020274 -0.133915 -0.000459 0 -0 0</pose>
+          <mass>0.5</mass>
+          <inertia>
+            <ixx>0.0136171</ixx>
+            <ixy>0.00165794</ixy>
+            <ixz>-4.8e-07</ixz>
+            <iyy>0.00045024</iyy>
+            <iyz>-4.5e-07</iyz>
+            <izz>0.0138032</izz>
+          </inertia>
+        </inertial>
+        <collision name='link3_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link3.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link3_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link3.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint4' type='revolute'>
+        <pose relative_to='link3'>-0.021984 -0.25075 0 1.5708 -0 0</pose>
+        <parent>link3</parent>
+        <child>link4</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1.745</lower>
+            <upper>1.745</upper>
+            <effort>100</effort>
+            <velocity>5</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link4'>
+        <pose relative_to='joint4'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-9.7e-05 0.000876 -0.004969 0 -0 0</pose>
+          <mass>0.38</mass>
+          <inertia>
+            <ixx>0.00018501</ixx>
+            <ixy>5.4e-07</ixy>
+            <ixz>1.2e-06</ixz>
+            <iyy>0.00018965</iyy>
+            <iyz>-8.41e-06</iyz>
+            <izz>0.00015484</izz>
+          </inertia>
+        </inertial>
+        <collision name='link4_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link4.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link4_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link4.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint5' type='revolute'>
+        <pose relative_to='link4'>0 0 0 -1.5708 0 0</pose>
+        <parent>link4</parent>
+        <child>link5</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1.22</lower>
+            <upper>1.22</upper>
+            <effort>100</effort>
+            <velocity>5</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link5'>
+        <pose relative_to='joint5'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-4.1e-05 -0.056649 -0.003721 0 -0 0</pose>
+          <mass>0.383</mass>
+          <inertia>
+            <ixx>0.00166169</ixx>
+            <ixy>6e-08</ixy>
+            <ixz>-7e-08</ixz>
+            <iyy>0.0001851</iyy>
+            <iyz>1.026e-05</iyz>
+            <izz>0.00164321</izz>
+          </inertia>
+        </inertial>
+        <collision name='link5_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link5.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link5_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link5.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint6' type='revolute'>
+        <pose relative_to='link5'>8.8e-05 -0.091 0 1.5708 -0 0</pose>
+        <parent>link5</parent>
+        <child>link6</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-2.0944</lower>
+            <upper>2.0944</upper>
+            <effort>100</effort>
+            <velocity>3</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link6'>
+        <pose relative_to='joint6'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.000182 7.9e-05 0.031621 0 -0 0</pose>
+          <mass>0.456991</mass>
+          <inertia>
+            <ixx>0.000937938</ixx>
+            <ixy>3.40047e-07</ixy>
+            <ixz>-7.35754e-06</ixz>
+            <iyy>0.000723068</iyy>
+            <iyz>3.32077e-08</iyz>
+            <izz>0.000395487</izz>
+          </inertia>
+        </inertial>
+        <collision name='link6_collision'>
+          <pose>-0.035 -0.085 0.04 0 -0 1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>0.001 0.001 0.001</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/ZED.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='link6_fixed_joint_lump__gripper_base_collision_1'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/gripper_base.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link6_visual'>
+          <pose>-0.035 -0.085 0.04 0 -0 1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>0.001 0.001 0.001</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/ZED.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='link6_fixed_joint_lump__gripper_base_visual_1'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/gripper_base.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <sensor name='camera' type='depth'>
+          <pose>0.1 0 0 -1.57079 -1.57079 1.57079</pose>
+          <visualize>1</visualize>
+          <update_rate>30</update_rate>
+          <camera name='head'>
+            <horizontal_fov>1.39626</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.05</near>
+              <far>8</far>
+            </clip>
+          </camera>
+          <plugin name='depth_camera' filename='libgazebo_ros_camera.so'>
+            <frame_name>link6</frame_name>
+            <min_depth>0.1</min_depth>
+            <max_depth>100.0</max_depth>
+          </plugin>
+        </sensor>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint7' type='prismatic'>
+        <pose relative_to='link6'>0 0 0.1358 1.5708 -0 0</pose>
+        <parent>link6</parent>
+        <child>link7</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0.035</upper>
+            <effort>10</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link7'>
+        <pose relative_to='joint7'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0.000651 -0.049193 0.009723 0 -0 0</pose>
+          <mass>0.025</mass>
+          <inertia>
+            <ixx>7.371e-05</ixx>
+            <ixy>-1.13e-06</ixy>
+            <ixz>2.1e-07</ixz>
+            <iyy>-1.13e-06</iyy>
+            <iyz>-1.372e-05</iyz>
+            <izz>7.47e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='link7_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link7.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link7_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link7.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint8' type='prismatic'>
+        <pose relative_to='link6'>0 0 0.1358 1.5708 -0 3.14159</pose>
+        <parent>link6</parent>
+        <child>link8</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>-0.035</lower>
+            <upper>0</upper>
+            <effort>10</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link8'>
+        <pose relative_to='joint8'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0.000651 -0.049193 0.009723 0 -0 0</pose>
+          <mass>0.025</mass>
+          <inertia>
+            <ixx>7.371e-05</ixx>
+            <ixy>-1.13e-06</ixy>
+            <ixz>2.1e-07</ixz>
+            <iyy>-1.13e-06</iyy>
+            <iyz>-1.372e-05</iyz>
+            <izz>7.47e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='link8_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link8.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link8_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>file:///home/janitha/piper_bot_ws/install/piper_description/share/piper_description/meshes/link8.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <static>0</static>
+      <plugin name='gazebo_ros2_control' filename='libgazebo_ros2_control.so'>
+        <parameters>/home/janitha/piper_bot_ws/install/piper_gazebo/share/piper_gazebo/config/ros2_controllers.yaml</parameters>
+        <robot_param_node>robot_state_publisher</robot_param_node>
+      </plugin>
+      <pose>0 0 0 0 -0 0</pose>
+    </model>
+    <state world_name='default'>
+      <sim_time>105 794000000</sim_time>
+      <real_time>106 892181419</real_time>
+      <wall_time>1767080215 310169981</wall_time>
+      <iterations>105794</iterations>
+      <model name='ground_plane'>
+        <pose>0 0 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>0 0 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='piper'>
+        <pose>-0 0 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-0 0 0 0 -0 0</pose>
+          <velocity>0 0 -0 1e-06 -1e-06 0</velocity>
+          <acceleration>-3.1e-05 -2.3e-05 -0.000127 0.001281 -0.001217 4.7e-05</acceleration>
+          <wrench>-3.2e-05 -2.4e-05 -0.000129 0 -0 0</wrench>
+        </link>
+        <link name='link1'>
+          <pose>0 0 0.123 0 0 -0.000225</pose>
+          <velocity>-0 -0 -0 2e-06 -2e-06 8e-06</velocity>
+          <acceleration>-0.000193 -0.000156 -0.00012 0.001961 -0.002408 0.007856</acceleration>
+          <wrench>-0.000137 -0.000111 -8.5e-05 0 -0 0</wrench>
+        </link>
+        <link name='link2'>
+          <pose>0 0 0.123 1.5708 -0.100927 3.14136</pose>
+          <velocity>-0 -0 -0 -3e-06 -0.022596 8e-06</velocity>
+          <acceleration>-0.206949 -0.001728 -4.4913 2.67044 0.532807 -0.755267</acceleration>
+          <wrench>-0.24213 -0.002022 -5.25483 0 -0 0</wrench>
+        </link>
+        <link name='link3'>
+          <pose>-0.28358 6.5e-05 0.151719 -1.57084 1.48355 -0.00027</pose>
+          <velocity>-0.000649 -2e-06 -0.006408 5e-06 0.012541 8e-06</velocity>
+          <acceleration>-0.249646 -0.001577 -8.0588 -2.82301 0.388284 -3.01409</acceleration>
+          <wrench>-0.124823 -0.000788 -4.0294 0 -0 0</wrench>
+        </link>
+        <link name='link4'>
+          <pose>-0.035699 8e-06 0.195467 0.287498 1.47981 0.288396</pose>
+          <velocity>-0.000101 -1e-06 -0.009516 0.001192 0.01254 0.000111</velocity>
+          <acceleration>-0.104671 -0.000942 -9.45325 2.13067 0.061282 -0.345569</acceleration>
+          <wrench>-0.039775 -0.000358 -3.59224 0 -0 0</wrench>
+        </link>
+        <link name='link5'>
+          <pose>-0.035699 8e-06 0.195467 0.920932 1.52821 2.49419</pose>
+          <velocity>-0.000101 -1e-06 -0.009516 0.001213 0.002013 -0.00016</velocity>
+          <acceleration>-0.105203 -0.007427 -9.6348 -1.62125 0.322356 -0.474367</acceleration>
+          <wrench>-0.040293 -0.002845 -3.69013 0 -0 0</wrench>
+        </link>
+        <link name='link6'>
+          <pose>0.055246 0.000275 0.192294 -3.13813 1.53689 -3.13523</pose>
+          <velocity>-0.000107 -1.1e-05 -0.009699 -1.4e-05 0.00201 -0.000118</velocity>
+          <acceleration>-0.108788 -0.015204 -9.76275 3.12164 1.13228 3.09295</acceleration>
+          <wrench>-0.049715 -0.006948 -4.46149 0 -0 0</wrench>
+        </link>
+        <link name='link7'>
+          <pose>0.190969 0.000141 0.187691 -1.56733 1.53689 -3.13523</pose>
+          <velocity>-0.000116 -6e-06 -0.009972 -1.4e-05 0.00201 -0.000118</velocity>
+          <acceleration>-0.115472 -0.000343 -9.87306 -3e-05 7e-06 -7e-06</acceleration>
+          <wrench>-0.002887 -9e-06 -0.246827 0 -0 0</wrench>
+        </link>
+        <link name='link8'>
+          <pose>0.190966 0.001195 0.18769 -1.57433 -1.53689 0.006441</pose>
+          <velocity>-0.000116 -6e-06 -0.009972 -1.4e-05 0.00201 -0.000118</velocity>
+          <acceleration>-0.110449 -0.00033 -9.87331 5.2e-05 3e-06 3.2e-05</acceleration>
+          <wrench>-0.002761 -8e-06 -0.246833 0 -0 0</wrench>
+        </link>
+      </model>
+      <light name='sun'>
+        <pose>0 0 10 0 -0 0</pose>
+      </light>
+    </state>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>6.90368 -7.79506 3.12179 0 0.275643 2.35619</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+  </world>
+</sdf>

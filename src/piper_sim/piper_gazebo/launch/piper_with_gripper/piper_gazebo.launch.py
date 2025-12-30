@@ -21,9 +21,13 @@ def generate_launch_description():
     pkg_share = FindPackageShare(package=package_name).find(package_name) 
     urdf_model_path = os.path.join(pkg_share, f'urdf/{urdf_name}')
 
+    # Find the world file
+    piper_gazebo_share = FindPackageShare(package='piper_gazebo').find('piper_gazebo')
+    world_path = os.path.join(piper_gazebo_share, 'worlds', 'aruco_tag_world')
+
     # Start Gazebo server
     start_gazebo_cmd =  ExecuteProcess(
-        cmd=['gazebo', '--verbose','-s', 'libgazebo_ros_init.so', '-s', 'libgazebo_ros_factory.so'],
+        cmd=['gazebo', '--verbose', world_path, '-s', 'libgazebo_ros_init.so', '-s', 'libgazebo_ros_factory.so'],
         output='screen')
 
 
