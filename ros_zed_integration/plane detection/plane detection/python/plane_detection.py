@@ -30,19 +30,7 @@ import argparse
 import cv2
 import numpy as np
 
-# ROS 2 imports
-import rclpy
-from geometry_msgs.msg import TransformStamped
-import tf2_ros
-from rclpy.time import Time
-
-
-
 def main(opt):
-    rclpy.init(args=None)
-    node = rclpy.create_node('plane_detector_tf_publisher')
-    tf_broadcaster = tf2_ros.TransformBroadcaster(node)
-
     init = sl.InitParameters()
     parse_args(init, opt)
     init.coordinate_units = sl.UNIT.METER
@@ -66,6 +54,7 @@ def main(opt):
     pose = sl.Pose()    # positional tracking data
     plane = sl.Plane()  # detected plane 
     mesh = sl.Mesh()    # plane mesh
+    point_cloud = sl.Mat()
 
     find_plane_status = sl.ERROR_CODE.PLANE_NOT_FOUND
     tracking_state = sl.POSITIONAL_TRACKING_STATE.OFF
@@ -73,6 +62,7 @@ def main(opt):
     # Timestamp of the last mesh request
     last_call = time.time()
 
+    hit_point = None
     user_action = gl.UserAction()
     user_action.clear()
 
@@ -89,6 +79,7 @@ def main(opt):
         if zed.grab(runtime_parameters) <= sl.ERROR_CODE.SUCCESS:
             # Retrieve left image
             zed.retrieve_image(image, sl.VIEW.LEFT)
+            zed.retrieve_measure(point_cloud, sl.MEASURE.XYZ)
 
             # Convert sl.Mat to OpenCV (Numpy array)
             # The image is in BGRA format (4 channels)
@@ -98,27 +89,6 @@ def main(opt):
             tracking_state = zed.get_position(pose)
 
             if tracking_state == sl.POSITIONAL_TRACKING_STATE.OK:
-                # Publish Camera Pose (map -> base_link)
-                t_cam = TransformStamped()
-                zed_ts = zed.get_timestamp(sl.TIME_REFERENCE.IMAGE)
-                t_cam.header.stamp = Time(seconds=zed_ts.get_seconds(), nanoseconds=zed_ts.get_nanoseconds() % 1000000000).to_msg()
-                t_cam.header.frame_id = 'map'
-                t_cam.child_frame_id = 'base_link'
-
-                translation = pose.get_translation().get()
-                orientation = pose.get_orientation().get()
-
-                t_cam.transform.translation.x = float(translation[0])
-                t_cam.transform.translation.y = float(translation[1])
-                t_cam.transform.translation.z = float(translation[2])
-
-                t_cam.transform.rotation.x = float(orientation[0])
-                t_cam.transform.rotation.y = float(orientation[1])
-                t_cam.transform.rotation.z = float(orientation[2])
-                t_cam.transform.rotation.w = float(orientation[3])
-
-                tf_broadcaster.sendTransform(t_cam)
-
                 duration = time.time() - last_call  
 
                 # Plane detection on mouse click
@@ -127,6 +97,12 @@ def main(opt):
                         user_action.hit_coord[0] * camera_infos.camera_configuration.resolution.width,
                         user_action.hit_coord[1] * camera_infos.camera_configuration.resolution.height
                     ]
+                    err, point3D = point_cloud.get_value(int(image_click[0]), int(image_click[1]))
+                    if err == sl.ERROR_CODE.SUCCESS:
+                        if not (np.isnan(point3D[0]) or np.isnan(point3D[1]) or np.isnan(point3D[2])):
+                            hit_point = np.array(point3D[0:3])
+                        else:
+                            hit_point = None
                     find_plane_status = zed.find_plane_at_hit(
                         image_click, plane, plane_parameters
                     )
@@ -137,12 +113,16 @@ def main(opt):
                     find_plane_status = zed.find_floor_plane(
                         plane, reset_tracking_floor_frame
                     )
+                    hit_point = None
                     last_call = time.time()
 
                 if find_plane_status == sl.ERROR_CODE.SUCCESS:
                     mesh = plane.extract_mesh()
 
-                    center = plane.get_center()      # np.array([x, y, z])
+                    if hit_point is not None:
+                        center = hit_point
+                    else:
+                        center = plane.get_center()      # np.array([x, y, z])
                     normal = plane.get_normal()      # np.array([nx, ny, nz])
 
                     scale = 1.0
@@ -155,48 +135,6 @@ def main(opt):
                     # viewer.update_normal(p0, p1)
                     print("Center:", center, "Normal:", normal)
 
-                    # Publish the plane's pose to TF
-                    t = TransformStamped()
-
-                    # Get the timestamp from the ZED SDK
-                    zed_ts = zed.get_timestamp(sl.TIME_REFERENCE.IMAGE)
-                    t.header.stamp = Time(seconds=zed_ts.get_seconds(), nanoseconds=zed_ts.get_nanoseconds() % 1000000000).to_msg()
-                    
-                    # The 'map' frame is the world frame from the ZED ROS2 wrapper.
-                    # This publishes the plane's pose in the fixed world frame.
-                    t.header.frame_id = 'map'
-                    t.child_frame_id = 'detected_plane'
-
-                    # The pose of the plane is a transform that aligns the plane's local coordinate system
-                    # with the world frame. By convention, the local Z-axis of the plane is its normal.
-                    plane_pose = plane.get_pose()
-
-                    # Create a rotation of 180 degrees around the Z axis to invert the X axis
-                    rotation_180_z = sl.Transform()
-                    # A 180-degree rotation around Z is equivalent to a yaw of pi radians.
-                    rotation_180_z.set_euler_angles(0, 0, np.pi, radian=True)
-
-                    # Apply the rotation to the plane's pose.
-                    # The multiplication order T_new = T_old * T_applied applies the rotation in the local frame of T_old.
-                    # The result is a Matrix4f, so we must re-initialize an sl.Transform object from it.
-                    rotated_pose_matrix = plane_pose * rotation_180_z
-                    final_plane_pose = sl.Transform()
-                    final_plane_pose.init_matrix(rotated_pose_matrix)
-                    translation = final_plane_pose.get_translation().get()
-                    orientation = final_plane_pose.get_orientation().get()
-
-                    t.transform.translation.x = float(translation[0])
-                    t.transform.translation.y = float(translation[1])
-                    t.transform.translation.z = float(translation[2])
-
-                    t.transform.rotation.x = float(orientation[0])
-                    t.transform.rotation.y = float(orientation[1])
-                    t.transform.rotation.z = float(orientation[2])
-                    t.transform.rotation.w = float(orientation[3])
-
-                    tf_broadcaster.sendTransform(t)
-
-
             user_action = viewer.update_view(
                 image, pose.pose_data(), tracking_state
             )
@@ -204,7 +142,10 @@ def main(opt):
             # Visualize in another CV2 frame
             frame_vis = cv2.cvtColor(image_ocv, cv2.COLOR_BGRA2BGR)
             if tracking_state == sl.POSITIONAL_TRACKING_STATE.OK and find_plane_status == sl.ERROR_CODE.SUCCESS:
-                center = plane.get_center()
+                if hit_point is not None:
+                    center = hit_point
+                else:
+                    center = plane.get_center()
                 normal = plane.get_normal()
                 cv2.putText(frame_vis, "Plane Detected", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                 cv2.putText(frame_vis, f"Center: {center}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
@@ -249,14 +190,12 @@ def main(opt):
 
     viewer.exit()
     image.free(sl.MEM.CPU)
+    point_cloud.free(sl.MEM.CPU)
     mesh.clear()
 
     # Disable modules and close camera
     zed.disable_positional_tracking()
     zed.close()
-
-    node.destroy_node()
-    rclpy.shutdown()
 
 def parse_args(init, opt):
     if len(opt.input_svo_file)>0 and opt.input_svo_file.endswith((".svo", ".svo2")):

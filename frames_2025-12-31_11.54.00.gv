@@ -1,0 +1,17 @@
+digraph G {
+"base_link" -> "link1"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 6818.679\nOldest transform: 6813.671\n"];
+"map" -> "base_link"[label=" Broadcaster: default_authority\nAverage rate: 4.966\nBuffer length: 5.034\nMost recent transform: 1767162239.965614\nOldest transform: 1767162234.931802\n"];
+"link1" -> "link2"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 6818.679\nOldest transform: 6813.671\n"];
+"link2" -> "link3"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 6818.679\nOldest transform: 6813.671\n"];
+"link3" -> "link4"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 6818.679\nOldest transform: 6813.671\n"];
+"link4" -> "link5"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 6818.679\nOldest transform: 6813.671\n"];
+"link5" -> "link6"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 6818.679\nOldest transform: 6813.671\n"];
+"gripper_base" -> "link7"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 6818.679\nOldest transform: 6813.671\n"];
+"link6" -> "gripper_base"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"gripper_base" -> "link8"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 6818.679\nOldest transform: 6813.671\n"];
+"link6" -> "detected_plane"[label=" Broadcaster: default_authority\nAverage rate: 4.966\nBuffer length: 5.034\nMost recent transform: 1767162239.965614\nOldest transform: 1767162234.931802\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1767162240.2293415"[ shape=plaintext ] ;
+}->"map";
+}
