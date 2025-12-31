@@ -35,6 +35,8 @@ import rclpy
 from geometry_msgs.msg import TransformStamped
 import tf2_ros
 from rclpy.time import Time
+from tf2_ros.buffer import Buffer
+from tf2_ros.transform_listener import TransformListener
 
 
 
@@ -42,6 +44,8 @@ def main(opt):
     rclpy.init(args=None)
     node = rclpy.create_node('plane_detector_tf_publisher')
     tf_broadcaster = tf2_ros.TransformBroadcaster(node)
+    tf_buffer = Buffer()
+    tf_listener = TransformListener(tf_buffer, node)
 
     init = sl.InitParameters()
     parse_args(init, opt)
@@ -86,6 +90,7 @@ def main(opt):
     plane_parameters = sl.PlaneDetectionParameters()
 
     while viewer.is_available():
+        rclpy.spin_once(node, timeout_sec=0.0)
         if zed.grab(runtime_parameters) <= sl.ERROR_CODE.SUCCESS:
             # Retrieve left image
             zed.retrieve_image(image, sl.VIEW.LEFT)
@@ -97,27 +102,46 @@ def main(opt):
             # Update pose data
             tracking_state = zed.get_position(pose)
 
-            if tracking_state == sl.POSITIONAL_TRACKING_STATE.OK:
-                # Publish Camera Pose (map -> base_link)
-                t_cam = TransformStamped()
-                zed_ts = zed.get_timestamp(sl.TIME_REFERENCE.IMAGE)
-                t_cam.header.stamp = Time(seconds=zed_ts.get_seconds(), nanoseconds=zed_ts.get_nanoseconds() % 1000000000).to_msg()
-                t_cam.header.frame_id = 'map'
-                t_cam.child_frame_id = 'base_link'
+            if tracking_state == sl.POSITIONAL_TRACKING_STATE.OK:                
+                try:
+                    t_link6_base = tf_buffer.lookup_transform('base_link', 'link6', Time())
+                    
+                    # Create SL Transform from ROS Transform
+                    link6_pose = sl.Transform()
+                    link6_trans = sl.Translation()
+                    link6_trans.init_vector(t_link6_base.transform.translation.x, t_link6_base.transform.translation.y, t_link6_base.transform.translation.z)
+                    link6_orient = sl.Orientation()
+                    link6_orient.init_vector(t_link6_base.transform.rotation.x, t_link6_base.transform.rotation.y, t_link6_base.transform.rotation.z, t_link6_base.transform.rotation.w)
+                    link6_pose.init_orientation_translation(link6_orient, link6_trans)
 
-                translation = pose.get_translation().get()
-                orientation = pose.get_orientation().get()
+                    # Rotate 90 degrees around Y axis
+                    rot_90 = sl.Transform()
+                    rot_90.set_euler_angles(0, -np.pi/2, 0, radian=True)
+                    
+                    map_pose_matrix = link6_pose * rot_90
+                    map_pose = sl.Transform()
+                    map_pose.init_matrix(map_pose_matrix)
 
-                t_cam.transform.translation.x = float(translation[0])
-                t_cam.transform.translation.y = float(translation[1])
-                t_cam.transform.translation.z = float(translation[2])
-
-                t_cam.transform.rotation.x = float(orientation[0])
-                t_cam.transform.rotation.y = float(orientation[1])
-                t_cam.transform.rotation.z = float(orientation[2])
-                t_cam.transform.rotation.w = float(orientation[3])
-
-                tf_broadcaster.sendTransform(t_cam)
+                    t_map_base = TransformStamped()
+                    t_map_base.header.stamp = node.get_clock().now().to_msg()
+                    t_map_base.header.frame_id = 'base_link'
+                    t_map_base.child_frame_id = 'map'
+                    
+                    trans = map_pose.get_translation().get()
+                    orient = map_pose.get_orientation().get()
+                    
+                    t_map_base.transform.translation.x = float(trans[0])
+                    t_map_base.transform.translation.y = float(trans[1])
+                    t_map_base.transform.translation.z = float(trans[2])
+                    
+                    t_map_base.transform.rotation.x = float(orient[0])
+                    t_map_base.transform.rotation.y = float(orient[1])
+                    t_map_base.transform.rotation.z = float(orient[2])
+                    t_map_base.transform.rotation.w = float(orient[3])
+                    
+                    tf_broadcaster.sendTransform(t_map_base)
+                except tf2_ros.TransformException:
+                    print("failed")
 
                 duration = time.time() - last_call  
 
@@ -158,9 +182,7 @@ def main(opt):
                     # Publish the plane's pose to TF
                     t = TransformStamped()
 
-                    # Get the timestamp from the ZED SDK
-                    zed_ts = zed.get_timestamp(sl.TIME_REFERENCE.IMAGE)
-                    t.header.stamp = Time(seconds=zed_ts.get_seconds(), nanoseconds=zed_ts.get_nanoseconds() % 1000000000).to_msg()
+                    t.header.stamp = node.get_clock().now().to_msg()
                     
                     # The 'map' frame is the world frame from the ZED ROS2 wrapper.
                     # This publishes the plane's pose in the fixed world frame.
