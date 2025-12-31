@@ -170,20 +170,8 @@ def main(opt):
                     # The pose of the plane is a transform that aligns the plane's local coordinate system
                     # with the world frame. By convention, the local Z-axis of the plane is its normal.
                     plane_pose = plane.get_pose()
-
-                    # Create a rotation of 180 degrees around the Z axis to invert the X axis
-                    rotation_180_z = sl.Transform()
-                    # A 180-degree rotation around Z is equivalent to a yaw of pi radians.
-                    rotation_180_z.set_euler_angles(0, 0, np.pi, radian=True)
-
-                    # Apply the rotation to the plane's pose.
-                    # The multiplication order T_new = T_old * T_applied applies the rotation in the local frame of T_old.
-                    # The result is a Matrix4f, so we must re-initialize an sl.Transform object from it.
-                    rotated_pose_matrix = plane_pose * rotation_180_z
-                    final_plane_pose = sl.Transform()
-                    final_plane_pose.init_matrix(rotated_pose_matrix)
-                    translation = final_plane_pose.get_translation().get()
-                    orientation = final_plane_pose.get_orientation().get()
+                    translation = plane_pose.get_translation().get()
+                    orientation = plane_pose.get_orientation().get()
 
                     t.transform.translation.x = float(translation[0])
                     t.transform.translation.y = float(translation[1])
@@ -195,7 +183,6 @@ def main(opt):
                     t.transform.rotation.w = float(orientation[3])
 
                     tf_broadcaster.sendTransform(t)
-
 
             user_action = viewer.update_view(
                 image, pose.pose_data(), tracking_state
@@ -226,8 +213,8 @@ def main(opt):
 
                 def project(point3d):
                     p_cam = np.dot(view_matrix, np.append(point3d, 1))
-                    # ROS (X-fwd, Y-left, Z-up) to CV (Z-fwd, X-right, Y-down)
-                    x, y, z = -p_cam[1], -p_cam[2], p_cam[0]
+                    # With a ROS coordinate system, the camera frame is already in CV standard (X right, Y down, Z forward)
+                    x, y, z = p_cam[0], p_cam[1], p_cam[2]
                     if z > 0.1:
                         return (int(cx + fx * x / z), int(cy + fy * y / z))
                     return None
