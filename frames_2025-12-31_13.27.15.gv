@@ -1,0 +1,17 @@
+digraph G {
+"base_link" -> "link1"[label=" Broadcaster: default_authority\nAverage rate: 181.474\nBuffer length: 5.02\nMost recent transform: 2001.689\nOldest transform: 1996.669\n"];
+"world" -> "base_link"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"link1" -> "link2"[label=" Broadcaster: default_authority\nAverage rate: 181.474\nBuffer length: 5.02\nMost recent transform: 2001.689\nOldest transform: 1996.669\n"];
+"link2" -> "link3"[label=" Broadcaster: default_authority\nAverage rate: 181.474\nBuffer length: 5.02\nMost recent transform: 2001.689\nOldest transform: 1996.669\n"];
+"link3" -> "link4"[label=" Broadcaster: default_authority\nAverage rate: 181.474\nBuffer length: 5.02\nMost recent transform: 2001.689\nOldest transform: 1996.669\n"];
+"link4" -> "link5"[label=" Broadcaster: default_authority\nAverage rate: 181.474\nBuffer length: 5.02\nMost recent transform: 2001.689\nOldest transform: 1996.669\n"];
+"link5" -> "link6"[label=" Broadcaster: default_authority\nAverage rate: 181.474\nBuffer length: 5.02\nMost recent transform: 2001.689\nOldest transform: 1996.669\n"];
+"gripper_base" -> "link7"[label=" Broadcaster: default_authority\nAverage rate: 181.474\nBuffer length: 5.02\nMost recent transform: 2001.689\nOldest transform: 1996.669\n"];
+"link6" -> "gripper_base"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"gripper_base" -> "link8"[label=" Broadcaster: default_authority\nAverage rate: 181.474\nBuffer length: 5.02\nMost recent transform: 2001.689\nOldest transform: 1996.669\n"];
+"link6" -> "map"[label=" Broadcaster: default_authority\nAverage rate: 5.27\nBuffer length: 4.933\nMost recent transform: 1767167834.837075\nOldest transform: 1767167829.90377\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1767167835.0808575"[ shape=plaintext ] ;
+}->"world";
+}

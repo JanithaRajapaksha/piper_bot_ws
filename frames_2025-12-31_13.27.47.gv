@@ -1,0 +1,18 @@
+digraph G {
+"base_link" -> "link1"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 2034.063\nOldest transform: 2029.055\n"];
+"world" -> "base_link"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"link1" -> "link2"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 2034.063\nOldest transform: 2029.055\n"];
+"link2" -> "link3"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 2034.063\nOldest transform: 2029.055\n"];
+"link3" -> "link4"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 2034.063\nOldest transform: 2029.055\n"];
+"link4" -> "link5"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 2034.063\nOldest transform: 2029.055\n"];
+"link5" -> "link6"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 2034.063\nOldest transform: 2029.055\n"];
+"gripper_base" -> "link7"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 2034.063\nOldest transform: 2029.055\n"];
+"link6" -> "gripper_base"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"gripper_base" -> "link8"[label=" Broadcaster: default_authority\nAverage rate: 180.711\nBuffer length: 5.008\nMost recent transform: 2034.063\nOldest transform: 2029.055\n"];
+"map" -> "detected_plane"[label=" Broadcaster: default_authority\nAverage rate: 3.541\nBuffer length: 4.8\nMost recent transform: 1767167866.971936\nOldest transform: 1767167862.171694\n"];
+"link6" -> "map"[label=" Broadcaster: default_authority\nAverage rate: 3.555\nBuffer length: 4.5\nMost recent transform: 1767167866.971936\nOldest transform: 1767167862.471762\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1767167867.4718583"[ shape=plaintext ] ;
+}->"world";
+}
