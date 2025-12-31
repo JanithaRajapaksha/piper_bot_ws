@@ -163,60 +163,53 @@ def main(opt):
                     )
                     last_call = time.time()
 
-                if find_plane_status == sl.ERROR_CODE.SUCCESS:
-                    mesh = plane.extract_mesh()
+                # Only publish plane once
+                plane_fixed = False
 
-                    center = plane.get_center()      # np.array([x, y, z])
-                    normal = plane.get_normal()      # np.array([nx, ny, nz])
+                if find_plane_status == sl.ERROR_CODE.SUCCESS and not plane_fixed:
 
-                    scale = 1.0
-                    p0 = center
-                    p1 = center + normal * scale
-
-                    viewer.update_mesh(mesh, plane.type)
-
-                    # # 🔹 PASS NUMPY ARRAYS
-                    # viewer.update_normal(p0, p1)
-                    print("Center:", center, "Normal:", normal)
-
-                    # Publish the plane's pose to TF
-                    t = TransformStamped()
-
-                    t.header.stamp = node.get_clock().now().to_msg()
-                    
-                    # The 'map' frame is the world frame from the ZED ROS2 wrapper.
-                    # This publishes the plane's pose in the fixed world frame.
-                    t.header.frame_id = 'map'
-                    t.child_frame_id = 'detected_plane'
-
-                    # The pose of the plane is a transform that aligns the plane's local coordinate system
-                    # with the world frame. By convention, the local Z-axis of the plane is its normal.
+                    # Get plane pose from ZED
                     plane_pose = plane.get_pose()
 
-                    # Create a rotation of 180 degrees around the Z axis to invert the X axis
+                    # Optional: rotate 180° around Z if needed
                     rotation_180_z = sl.Transform()
-                    # A 180-degree rotation around Z is equivalent to a yaw of pi radians.
                     rotation_180_z.set_euler_angles(0, 0, np.pi, radian=True)
-
-                    # Apply the rotation to the plane's pose.
-                    # The multiplication order T_new = T_old * T_applied applies the rotation in the local frame of T_old.
-                    # The result is a Matrix4f, so we must re-initialize an sl.Transform object from it.
                     rotated_pose_matrix = plane_pose * rotation_180_z
                     final_plane_pose = sl.Transform()
                     final_plane_pose.init_matrix(rotated_pose_matrix)
+
+                    # Convert to ROS TransformStamped
+                    plane_tf = TransformStamped()
+                    plane_tf.header.stamp = node.get_clock().now().to_msg()
+                    plane_tf.header.frame_id = "base_link"  # FIXED relative to robot base
+                    plane_tf.child_frame_id = "detected_plane"
+
                     translation = final_plane_pose.get_translation().get()
                     orientation = final_plane_pose.get_orientation().get()
 
-                    t.transform.translation.x = float(translation[0])
-                    t.transform.translation.y = float(translation[1])
-                    t.transform.translation.z = float(translation[2])
+                    plane_tf.transform.translation.x = float(translation[0])
+                    plane_tf.transform.translation.y = float(translation[1])
+                    plane_tf.transform.translation.z = float(translation[2])
 
-                    t.transform.rotation.x = float(orientation[0])
-                    t.transform.rotation.y = float(orientation[1])
-                    t.transform.rotation.z = float(orientation[2])
-                    t.transform.rotation.w = float(orientation[3])
+                    plane_tf.transform.rotation.x = float(orientation[0])
+                    plane_tf.transform.rotation.y = float(orientation[1])
+                    plane_tf.transform.rotation.z = float(orientation[2])
+                    plane_tf.transform.rotation.w = float(orientation[3])
 
-                    tf_broadcaster.sendTransform(t)
+                    # Publish static transform
+                    static_broadcaster = tf2_ros.StaticTransformBroadcaster(node)
+                    static_broadcaster.sendTransform(plane_tf)
+                    plane_fixed = True
+
+                    print("✅ Plane fixed in base_link frame")
+
+                    # Update mesh and OpenGL view
+                    mesh = plane.extract_mesh()
+                    center = plane.get_center()
+                    normal = plane.get_normal()
+                    viewer.update_mesh(mesh, plane.type)
+                    print("Center:", center, "Normal:", normal)
+
 
 
             user_action = viewer.update_view(
