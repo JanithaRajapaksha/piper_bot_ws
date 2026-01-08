@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
+import rclpy
+from rclpy.node import Node
+from tf2_ros import TransformBroadcaster
+from geometry_msgs.msg import TransformStamped
+from scipy.spatial.transform import Rotation as R
+
 import numpy as np
 
 import argparse
 import torch
 import cv2
-import os
-import time
 import pyzed.sl as sl
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
@@ -28,39 +32,22 @@ exit_signal = False
 image_net: np.ndarray = None
 detections: List[sl.CustomMaskObjectData] = None
 sl_mats: List[sl.Mat] = None  # We need it to keep the ownership of the sl.Mat
-click_point = None
-visual_arrows = []
 
 
-def compute_pca_normal(points: np.ndarray):
-    """
-    points: (N,3) numpy array
-    returns: centroid (3,), normal (3,)
-    """
-    if points.shape[0] < 10:
-        return None, None
+def draw_3d_bbox(image, bbox_3d, cam_params, color=(0, 255, 0)):
+    pts_2d = project_3d_to_2d(bbox_3d, cam_params)
 
-    centroid = np.mean(points, axis=0)
-    centered = points - centroid
+    if any(p is None for p in pts_2d):
+        return
 
-    # Covariance matrix
-    cov = np.cov(centered.T)
+    edges = [
+        (0,1),(1,2),(2,3),(3,0),  # bottom
+        (4,5),(5,6),(6,7),(7,4),  # top
+        (0,4),(1,5),(2,6),(3,7)   # vertical
+    ]
 
-    # Eigen decomposition
-    eigenvalues, eigenvectors = np.linalg.eigh(cov)
-
-    # Smallest eigenvalue → normal
-    normal = eigenvectors[:, 0]
-    normal = normal / np.linalg.norm(normal)
-
-    return centroid, normal
-
-
-
-def on_mouse(event, x, y, flags, param):
-    global click_point
-    if event == cv2.EVENT_LBUTTONDOWN:
-        click_point = (x, y)
+    for i, j in edges:
+        cv2.line(image, pts_2d[i], pts_2d[j], color, 2)
 
 
 def xywh2abcd_(xywh: np.ndarray) -> np.ndarray:
@@ -165,9 +152,38 @@ def torch_thread_(weights: str, img_size: int, conf_thres: float = 0.2, iou_thre
 
         sleep(0.01)
 
+def project_3d_to_2d(points_3d, cam_params):
+    fx = cam_params.fx
+    fy = cam_params.fy
+    cx = cam_params.cx
+    cy = cam_params.cy
+
+    pts_2d = []
+
+    for p in points_3d:
+        X = p[0]
+        Y = p[1]
+        Z = p[2]
+
+        # ZED: forward is NEGATIVE Z
+        if Z >= 0:
+            pts_2d.append(None)
+            continue
+
+        Z = -Z  # convert to OpenCV convention
+
+        u = int((X * fx / Z) + cx)
+        v = int((-Y * fy / Z) + cy)
+
+        pts_2d.append((u, v))
+
+    return pts_2d
+
+
+
 
 def main_(args: argparse.Namespace):
-    global image_net, exit_signal, run_signal, detections, click_point, visual_arrows
+    global image_net, exit_signal, run_signal, detections
 
     # Determine memory type based on CuPy availability and user preference
     use_gpu = gl.GPU_ACCELERATION_AVAILABLE and not args.disable_gpu_data_transfer
@@ -187,9 +203,9 @@ def main_(args: argparse.Namespace):
         input_type.set_from_svo_file(args.svo)
     init_params = sl.InitParameters(input_t=input_type, svo_real_time_mode=True)
     init_params.coordinate_units = sl.UNIT.METER
-    init_params.depth_mode = sl.DEPTH_MODE.NEURAL  # QUALITY
+    init_params.depth_mode = sl.DEPTH_MODE.NEURAL_PLUS  # QUALITY
     init_params.coordinate_system = sl.COORDINATE_SYSTEM.RIGHT_HANDED_Y_UP
-    init_params.depth_maximum_distance = 50
+    init_params.depth_maximum_distance = 10
 
     # Initialize the camera
     print("Initializing Camera...")
@@ -237,12 +253,6 @@ def main_(args: argparse.Namespace):
     track_view_generator.set_camera_calibration(camera_config.calibration_parameters)
     image_track_ocv = np.zeros((tracks_resolution.height, tracks_resolution.width, 4), np.uint8)
 
-    masks_dir = "captured_masks"
-    os.makedirs(masks_dir, exist_ok=True)
-
-    cv2.namedWindow("ZED | 2D View and Birds View")
-    cv2.setMouseCallback("ZED | 2D View and Birds View", on_mouse)
-
     # Prepare runtime retrieval
     runtime_params = sl.RuntimeParameters()
     obj_runtime_param = sl.CustomObjectDetectionRuntimeParameters()
@@ -283,100 +293,43 @@ def main_(args: argparse.Namespace):
                 image_left_ocv = cp.asnumpy(cp.asarray(image_left.get_data(memory_type=mem_type, deep_copy=False)))
             else:
                 np.copyto(image_left_ocv, image_left.get_data(memory_type=mem_type, deep_copy=False))
-            # Tracking view
-            track_view_generator.generate_view(objects, image_left_ocv,image_scale ,cam_w_pose, image_track_ocv, objects.is_tracked)
+            # Draw 3D boxes on the 2D image
+            cam_params = camera_config.calibration_parameters.left_cam
 
-            # Draw persistent normal arrows
-            for (start, end) in visual_arrows:
-                cv2.arrowedLine(
-                    image_left_ocv,
-                    start,
-                    end,
-                    (0, 255, 0, 255),
-                    1,
-                    tipLength=0.3
-                )
+            # Convert once (always valid)
+            image_bgr = cv2.cvtColor(image_left_ocv, cv2.COLOR_BGRA2BGR)
 
-            global_image = cv2.hconcat([image_left_ocv, image_track_ocv])
-            cv2.imshow("ZED | 2D View and Birds View", global_image)
+            cam_params = camera_config.calibration_parameters.left_cam
 
-            if click_point is not None:
-                cx, cy = click_point
-                click_point = None
-                if cx < image_left_ocv.shape[1]:
-                    rx = camera_res.width / image_left_ocv.shape[1]
-                    ry = camera_res.height / image_left_ocv.shape[0]
-                    px = int(cx * rx)
-                    py = int(cy * ry)
+            for obj in objects.object_list:
+                if obj.tracking_state == sl.OBJECT_TRACKING_STATE.OK:
+                    draw_3d_bbox(image_bgr, obj.bounding_box, cam_params)
 
-                    for obj in objects.object_list:
-                        bbox = obj.bounding_box_2d
-                        x_min = np.min(bbox[:, 0])
-                        y_min = np.min(bbox[:, 1])
+                    # Compute center of the 3D bounding box
+                    center = np.mean(obj.bounding_box, axis=0)  # [x, y, z]
 
-                        if x_min <= px <= np.max(bbox[:, 0]) and y_min <= py <= np.max(bbox[:, 1]):
-                            if obj.mask.is_init():
-                                mask_data = obj.mask.get_data()
-                                mh, mw = mask_data.shape[:2]
-                                lx, ly = int(px - x_min), int(py - y_min)
-                                if 0 <= lx < mw and 0 <= ly < mh and mask_data[ly, lx] > 0:
-                                    timestamp = int(time.time())
-                                    fname = os.path.join(masks_dir, f"mask_{obj.raw_label}_{obj.id}_{timestamp}.png")
-                                    cv2.imwrite(fname, mask_data)
-                                    print(f"Saved mask: {fname}")
+                    # Optionally, orientation can be identity (no rotation) or use obj.rotation if available
+                    quat = [0, 0, 0, 1]  # identity quaternion
 
-                                    # Retrieve and save point cloud details
-                                    point_cloud_req = sl.Mat()
-                                    normals_req = sl.Mat()
-                                    if zed.retrieve_measure(point_cloud_req, sl.MEASURE.XYZRGBA, sl.MEM.CPU, camera_res) == sl.ERROR_CODE.SUCCESS and \
-                                       zed.retrieve_measure(normals_req, sl.MEASURE.NORMALS, sl.MEM.CPU, camera_res) == sl.ERROR_CODE.SUCCESS:
-                                        pc_data = point_cloud_req.get_data()
-                                        normals_data = normals_req.get_data()
-                                        
-                                        # Crop to bounding box
-                                        y1, y2 = int(y_min), int(np.max(bbox[:, 1]))
-                                        x1, x2 = int(x_min), int(np.max(bbox[:, 0]))
-                                        y1, x1 = max(0, y1), max(0, x1)
-                                        y2, x2 = min(pc_data.shape[0], y2), min(pc_data.shape[1], x2)
-                                        
-                                        pc_crop = pc_data[y1:y2, x1:x2]
-                                        normals_crop = normals_data[y1:y2, x1:x2]
-                                        
-                                        # Resize mask to match crop (handling rounding errors)
-                                        crop_h, crop_w = pc_crop.shape[:2]
-                                        mask_resized = cv2.resize(mask_data, (crop_w, crop_h), interpolation=cv2.INTER_NEAREST) if (mask_data.shape[0] != crop_h or mask_data.shape[1] != crop_w) else mask_data
-                                        
-                                        # Filter valid points
-                                        xyz_data = pc_crop[mask_resized > 0][:, :3]
-                                        xyz_data = xyz_data[np.isfinite(xyz_data).all(axis=1)]
-                                        
-                                        # --- VISUALIZE MULTIPLE NORMALS ---
-                                        visual_arrows = []
-                                        stride = 20
-                                        arrow_len = 25
-                                        
-                                        for r in range(0, crop_h, stride):
-                                            for c in range(0, crop_w, stride):
-                                                if mask_resized[r, c] > 0:
-                                                    n = normals_crop[r, c]
-                                                    if np.isfinite(n[0]) and np.isfinite(n[1]) and np.isfinite(n[2]):
-                                                        # Global camera coordinates
-                                                        gx = x1 + c
-                                                        gy = y1 + r
-                                                        
-                                                        # Display coordinates
-                                                        dx = int(gx * image_scale[0])
-                                                        dy = int(gy * image_scale[1])
-                                                        
-                                                        # Simple projection for visualization
-                                                        ex = int(dx + n[0] * arrow_len)
-                                                        ey = int(dy - n[1] * arrow_len)
-                                                        
-                                                        visual_arrows.append(((dx, dy), (ex, ey)))
-                                        
-                                        pc_fname = os.path.join(masks_dir, f"cloud_{obj.raw_label}_{obj.id}_{timestamp}.npy")
-                                        np.save(pc_fname, xyz_data)
-                                        print(f"Saved point cloud: {pc_fname}")
+                    t = TransformStamped()
+                    t.header.stamp = ros_node.get_clock().now().to_msg()
+                    t.header.frame_id = "base_link"
+                    t.child_frame_id = f"object_{obj.id}" if hasattr(obj, 'id') else f"object_unknown"
+
+                    t.transform.translation.x = float(center[0])
+                    t.transform.translation.y = float(center[1])
+                    t.transform.translation.z = float(center[2])
+                    t.transform.rotation.x = float(quat[0])
+                    t.transform.rotation.y = float(quat[1])
+                    t.transform.rotation.z = float(quat[2])
+                    t.transform.rotation.w = float(quat[3])
+
+
+                    tf_broadcaster.sendTransform(t)
+
+
+            cv2.imshow("ZED | 3D BBoxes on Image", image_bgr)
+
 
             key = cv2.waitKey(10)
             if key in (27, ord('q'), ord('Q')):
@@ -394,6 +347,12 @@ def main_(args: argparse.Namespace):
 
 
 if __name__ == '__main__':
+
+    rclpy.init()
+    ros_node = Node("zed_object_tf_broadcaster")
+    tf_broadcaster = TransformBroadcaster(ros_node)
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str, default='yolo11m-seg.pt', help='model.pt path')
     parser.add_argument('--svo', type=str, default=None, help='optional svo file')
@@ -404,3 +363,7 @@ if __name__ == '__main__':
 
     with torch.no_grad():
         main_(args)
+
+    ros_node.destroy_node()
+    rclpy.shutdown()
+

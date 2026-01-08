@@ -748,7 +748,7 @@
           <geometry>
             <mesh>
               <uri>model://aruco_original_id_0/meshes/aruco_original_id_0.dae</uri>
-              <scale>4 4 4</scale>
+              <scale>1 1 1</scale>
             </mesh>
           </geometry>
         </visual>

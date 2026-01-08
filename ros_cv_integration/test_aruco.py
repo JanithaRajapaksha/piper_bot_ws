@@ -20,7 +20,7 @@ class ArucoSubscriber(Node):
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
         
         # Marker length in meters
-        self.marker_length = 1.0 
+        self.marker_length = 0.3
 
         self.camera_matrix = None
         self.dist_coeffs = None
