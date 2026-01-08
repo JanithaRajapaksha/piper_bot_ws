@@ -2,7 +2,6 @@ build/
 log/
 install/
 yolo11m-seg.pt
-src/pymoveit2/
 gemini_output/
 captured_masks/
 ros_cv_integration/.env
