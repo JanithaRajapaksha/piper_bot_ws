@@ -57,7 +57,7 @@ def main():
     executor_thread = Thread(target=executor.spin, daemon=True)
     executor_thread.start()
 
-    rate = node.create_rate(1)
+    rate = node.create_rate(10)
 
     node.get_logger().info(f"Listening to TF: {target_frame}")
 

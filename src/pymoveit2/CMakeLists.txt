@@ -25,9 +25,12 @@ install(PROGRAMS
     ${EXAMPLES_DIR}/ex_pose_goal.py
     ${EXAMPLES_DIR}/piper_pose_goal.py
     ${EXAMPLES_DIR}/piper_pose_goal_aruco.py
+    ${EXAMPLES_DIR}/piper_pose_goal_frame.py
     ${EXAMPLES_DIR}/piper_pose_goal_with_place.py
     ${EXAMPLES_DIR}/move_to_aruco_corner.py
     ${EXAMPLES_DIR}/ex_servo.py
+    ${EXAMPLES_DIR}/moveit_trajectory_listener.py
+    ${EXAMPLES_DIR}/pick_and_place.py
     DESTINATION lib/${PROJECT_NAME}
 )
 

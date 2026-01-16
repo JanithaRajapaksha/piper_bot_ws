@@ -388,9 +388,9 @@ class ZEDObjectTFNode(Node):
 
                     # Transform from ZED camera to ROS camera_link
                     R_zed_to_ros = np.array([
-                        [0, -1, 0],   # ROS X = ZED Z
-                        [-1, 0, 0],   # ROS Y = ZED X
-                        [0, 0, -1]    # ROS Z = ZED Y
+                        [0, -1, 0],  
+                        [-1, 0, 0],   
+                        [0, 0, -1]    
                     ])
                     bbox_ros = (R_zed_to_ros @ obj.bounding_box.T).T
 

@@ -26,14 +26,16 @@ def main():
     # ----------------------------
     # Parameters
     # ----------------------------
-    node.declare_parameter("target_frame", "object_2")
+    node.declare_parameter("target_frame", "clicked_point_frame")
     node.declare_parameter("base_frame", "base_link")
 
     # Fixed orientation (kept constant)
-    node.declare_parameter("quat_xyzw", [0.0, 0.7, 0.0, 0.714])
+    # node.declare_parameter("quat_xyzw", [0.000, 0.676, -0.000, 0.737])
+    node.declare_parameter("quat_xyzw", [0.000, 0.676, -0.000, 0.737])
+
 
     node.declare_parameter("cartesian", False)
-    node.declare_parameter("cartesian_max_step", 0.0025)
+    node.declare_parameter("cartesian_max_step", 0.1)
     node.declare_parameter("cartesian_fraction_threshold", 0.0)
 
     # ----------------------------
@@ -104,7 +106,7 @@ def main():
             )
             break
         except Exception:
-            rate.sleep()
+            continue
 
     if transform is None:
         node.get_logger().error("TF lookup failed")
