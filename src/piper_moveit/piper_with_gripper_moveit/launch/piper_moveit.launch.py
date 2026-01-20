@@ -69,7 +69,7 @@ def my_generate_move_group_launch(ld, moveit_config):
         moveit_config.to_dict(),
         move_group_configuration,
     ]
-    move_group_params.append({"use_sim_time": False})
+    move_group_params.append({"use_sim_time": True})
 
     add_debuggable_node(
         ld,

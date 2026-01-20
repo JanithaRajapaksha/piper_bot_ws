@@ -17,7 +17,7 @@ def generate_launch_description():
         get_package_share_directory('piper_description'),
         'launch',
         'piper_with_gripper',
-        'display_xacro.launch.py'
+        'display_urdf.launch.py'
     )
 
     # Define launch parameters

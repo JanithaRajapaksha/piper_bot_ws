@@ -31,6 +31,7 @@ install(PROGRAMS
     ${EXAMPLES_DIR}/ex_servo.py
     ${EXAMPLES_DIR}/moveit_trajectory_listener.py
     ${EXAMPLES_DIR}/pick_and_place.py
+    ${EXAMPLES_DIR}/pick_and_place_srv.py
     DESTINATION lib/${PROJECT_NAME}
 )
 

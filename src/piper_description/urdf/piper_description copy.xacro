@@ -2,20 +2,10 @@
 <robot
   name="piper"
   xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:arg name="camera_name"   default="zed" />
-  <xacro:arg name="camera_model"  default="zed" />
-  <xacro:arg name="custom_baseline"  default="0.0" />
-  <!-- If GNSS fusion is enabled the position of the antenna with respect to the camera mount point is required -->
-  <xacro:arg name="enable_gnss"   default="false" />
-  <xacro:arg name="gnss_x" default="0.0" />
-  <xacro:arg name="gnss_y" default="0.0" />
-  <xacro:arg name="gnss_z" default="0.0" />
-
   <xacro:include filename="$(find zed_wrapper)/urdf/zed_macro.urdf.xacro" />
   <xacro:zed_camera name="$(arg camera_name)" model="$(arg camera_model)" custom_baseline="$(arg custom_baseline)" enable_gnss="$(arg enable_gnss)">
 	    <origin xyz="$(arg gnss_x) $(arg gnss_y) $(arg gnss_z)" rpy="0 0 0"/>
   </xacro:zed_camera>
-
 <!-- world -->
   <link name="world"/>
   <joint name="fixed_base_joint" type="fixed">
@@ -349,12 +339,38 @@
       velocity="3" />
   </joint>
 
+  <link name="zed_link">
+  <inertial>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <mass value="0.05"/>
+    <inertia
+      ixx="1e-5" ixy="0" ixz="0"
+      iyy="1e-5" iyz="0"
+      izz="1e-5"/>
+  </inertial>
+
+  <visual>
+    <origin xyz="0 0 0" rpy="0 -1.571 0"/>
+    <geometry>
+      <mesh filename="package://piper_description/meshes/zedm.stl"/>
+    </geometry>
+  </visual>
+
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://piper_description/meshes/zedm.stl"/>
+    </geometry>
+  </collision>
+</link>
+
 <joint name="link6_to_zed_joint" type="fixed">
   <parent link="link6"/>
-  <child link="zed_camera_link"/>
+  <child link="zed_link"/>
+
+  <!-- Adjust this pose -->
   <origin xyz="-0.05 0 0" rpy="0 0 0"/>
 </joint>
-
 
 
   <link
