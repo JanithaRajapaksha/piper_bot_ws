@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<robot name="rover_robot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Base link using your STL -->
+  <link name="arm_base">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="5.0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://piper_description/meshes/arm_base.stl"  scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="gray">
+        <color rgba="0.7 0.7 0.7 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://piper_description/meshes/arm_base.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Fixed joint connecting arm_base to world -->
+  <joint name="arm_base_to_world" type="fixed">
+    <parent link="arm_base"/>
+    <child link="world"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+</robot>

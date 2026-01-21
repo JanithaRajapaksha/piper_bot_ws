@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<robot name="multi_robot_system" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Include arguments to configure each robot -->
+  <xacro:arg name="include_piper" default="true"/>
+  <xacro:arg name="include_rover" default="true"/>
+
+
+  <xacro:if value="$(arg include_piper)">
+    <xacro:include filename="$(find piper_description)/urdf/piper_description.xacro"/>
+  </xacro:if>
+
+
+  <xacro:if value="$(arg include_rover)">
+    <xacro:include filename="$(find piper_description)/urdf/rover.xacro"/>
+  </xacro:if>
+
+</robot>
