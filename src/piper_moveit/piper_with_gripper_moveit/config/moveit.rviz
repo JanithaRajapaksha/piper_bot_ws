@@ -4,6 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Global Options1
         - /MotionPlanning1
         - /MotionPlanning1/Planning Request1
         - /TF1
@@ -65,10 +66,30 @@ Visualization Manager:
         Interrupt Display: false
         Links:
           All Links Enabled: true
+          Chassis_Link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           Expand Joint Details: false
           Expand Link Details: false
           Expand Tree: false
+          L_motor_Link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           Link Tree Style: Links in Alphabetic Order
+          R_motor_Link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          arm_mount_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           base_link:
             Alpha: 1
             Show Axes: false
@@ -119,6 +140,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          rover_base_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           world:
             Alpha: 1
             Show Axes: false
@@ -190,10 +215,30 @@ Visualization Manager:
         Attached Body Color: 150; 50; 150
         Links:
           All Links Enabled: true
+          Chassis_Link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           Expand Joint Details: false
           Expand Link Details: false
           Expand Tree: false
+          L_motor_Link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           Link Tree Style: Links in Alphabetic Order
+          R_motor_Link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          arm_mount_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           base_link:
             Alpha: 1
             Show Axes: false
@@ -244,6 +289,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          rover_base_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           world:
             Alpha: 1
             Show Axes: false
@@ -283,6 +332,10 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        Chassis_Link:
+          Value: true
+        arm_mount_link:
+          Value: true
         base_link:
           Value: false
         gripper_base:
@@ -301,6 +354,8 @@ Visualization Manager:
           Value: false
         link7:
           Value: false
+        rover_base_link:
+          Value: true
         world:
           Value: false
         zed_camera_center:
@@ -321,31 +376,15 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        world:
-          base_link:
-            link1:
-              link2:
-                link3:
-                  link4:
-                    link5:
-                      link6:
-                        gripper_base:
-                          link7:
-                            {}
-                        zed_camera_link:
-                          zed_camera_center:
-                            zed_left_camera_frame:
-                              zed_left_camera_frame_optical:
-                                {}
-                            zed_right_camera_frame:
-                              zed_right_camera_frame_optical:
-                                {}
+        rover_base_link:
+          Chassis_Link:
+            {}
       Update Interval: 0
       Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: world
+    Fixed Frame: rover_base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -360,25 +399,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.2441747188568115
+      Distance: 2.681060552597046
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.08269943296909332
-        Y: 0.053021229803562164
-        Z: 0.3392453193664551
+        X: 0.109823077917099
+        Y: -0.02886510267853737
+        Z: 0.3819522261619568
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4349997937679291
+      Pitch: 0.32499960064888
       Target Frame: world
       Value: Orbit (rviz_default_plugins)
-      Yaw: 0.5520002841949463
+      Yaw: 1.1570032835006714
     Saved: ~
 Window Geometry:
   Displays:

@@ -1,35 +1,230 @@
 <?xml version="1.0"?>
 <robot name="rover_robot" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- Base link using your STL -->
-  <link name="arm_base">
+<link name="rover_base_link"/>
+
+<joint
+    name="rover_base_to_chassis"
+    type="fixed">
+    <origin
+      xyz="0 0 0.077"
+      rpy="0 0 0" />
+    <parent
+      link="rover_base_link" />
+    <child
+      link="Chassis_Link" />
+  </joint>
+
+
+<link
+    name="Chassis_Link">
     <inertial>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <mass value="5.0"/>
-      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+      <origin
+        xyz="-0.00888321951007232 4.84719239034864E-06 0.282870928554345"
+        rpy="0 0 0" />
+      <mass
+        value="7.81823757594052" />
+      <inertia
+        ixx="0.173829841633806"
+        ixy="-2.61535733008266E-07"
+        ixz="4.56601262365899E-05"
+        iyy="0.17814172213214"
+        iyz="4.33582401547962E-08"
+        izz="0.148481984067226" />
     </inertial>
     <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://piper_description/meshes/arm_base.stl"  scale="0.001 0.001 0.001"/>
+        <mesh
+          filename="package://piper_description/meshes/chassis.stl" />
       </geometry>
-      <material name="gray">
-        <color rgba="0.7 0.7 0.7 1"/>
+      <material
+        name="">
+        <color
+          rgba="0.298039215686275 0.298039215686275 0.298039215686275 1" />
       </material>
     </visual>
     <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://piper_description/meshes/arm_base.stl" scale="0.001 0.001 0.001"/>
+        <mesh
+          filename="package://piper_description/meshes/chassis.stl" />
       </geometry>
     </collision>
   </link>
 
-  <!-- Fixed joint connecting arm_base to world -->
-  <joint name="arm_base_to_world" type="fixed">
-    <parent link="arm_base"/>
+<joint name="Chassis_Link_to_arm_mount" type="prismatic">
+  <origin
+      xyz="0.14655 0 0.36636"
+      rpy="0 0 0" />
+    <parent
+      link="Chassis_Link" />
+    <child
+      link="arm_mount_link" />
+  <axis xyz="0 0 1"/>
+  <limit lower="0" upper="0.58" effort="10.0" velocity="0.1"/>
+</joint>
+
+  <link
+    name="arm_mount_link">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <mass
+        value="0" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://piper_description/meshes/arm_mount2.stl" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://piper_description/meshes/arm_mount2.stl" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link
+    name="R_motor_Link">
+    <inertial>
+      <origin
+        xyz="1.4432603815933E-17 0.0325833084498167 9.71445146547012E-17"
+        rpy="0 0 0" />
+      <mass
+        value="0.607752808920021" />
+      <inertia
+        ixx="0.000684610807298508"
+        ixy="4.90814386516931E-20"
+        ixz="-2.44736717966333E-24"
+        iyy="0.00107449147292608"
+        iyz="1.17452344283282E-18"
+        izz="0.000684584940686824" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://piper_description/meshes/R_motor_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://piper_description/meshes/R_motor_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+    <joint
+    name="R_motor_Joint"
+    type="continuous">
+    <origin
+      xyz="2.8314E-05 -0.347 -0.017"
+      rpy="0 0 0" />
+    <parent
+      link="Chassis_Link" />
+    <child
+      link="R_motor_Link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+
+<link
+    name="L_motor_Link">
+    <inertial>
+      <origin
+        xyz="1.61815616588529E-18 -0.0325833084498167 3.46944695195361E-18"
+        rpy="0 0 0" />
+      <mass
+        value="0.607752808920021" />
+      <inertia
+        ixx="0.000684588641410266"
+        ixy="1.08411683374536E-20"
+        ixz="9.05703164512365E-09"
+        iyy="0.00107449147292608"
+        iyz="1.1077553008984E-20"
+        izz="0.000684607106575067" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://piper_description/meshes/L_motor_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://piper_description/meshes/L_motor_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint
+    name="L_motor_Joint"
+    type="continuous">
+    <origin
+      xyz="2.8314E-05 0.347 -0.017"
+      rpy="0 0 0" />
+    <parent
+      link="Chassis_Link" />
+    <child
+      link="L_motor_Link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+
+  <!-- Fixed joint connecting arm_mount to world -->
+  <joint name="arm_mount_to_world" type="fixed">
+    <parent link="arm_mount_link"/>
     <child link="world"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0.10 0 0" rpy="0 0 0"/>
   </joint>
 
 </robot>
