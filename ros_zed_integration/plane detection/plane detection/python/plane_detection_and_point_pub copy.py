@@ -8,6 +8,7 @@ from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
 from tf2_ros import TransformBroadcaster, TransformListener, Buffer
 from geometry_msgs.msg import TransformStamped, Transform
+from std_msgs.msg import String
 from scipy.spatial.transform import Rotation as R
 import sys
 import select
@@ -52,6 +53,7 @@ def matrix_to_transform(mat: np.ndarray) -> Transform:
 class PlaneDetectionNode(Node):
     def __init__(self):
         super().__init__('plane_detection_node')
+        self.event_publisher = self.create_publisher(String, 'detection_events', 10)
         self.clicked_point = None
         self.clicked = False
         
@@ -132,7 +134,7 @@ class PlaneDetectionNode(Node):
         else:
             self.get_logger().info("Plane detection node started in coordinate-input mode. Click is disabled.")
 
-        self.timer = self.create_timer(1/30.0, self.timer_callback)
+        self.timer = self.create_timer(1/200.0, self.timer_callback)
 
         self.input_thread = threading.Thread(target=self.runtime_input_handler)
         self.input_thread.daemon = True
@@ -371,6 +373,12 @@ class PlaneDetectionNode(Node):
         self.static_transform_stamped.transform = matrix_to_transform(mat_base_to_point)
         
         self.get_logger().info(f"Set new static transform for 'clicked_point_frame' relative to 'base_link'.")
+
+        # Publish event message
+        event_msg = String()
+        event_msg.data = "point"
+        self.event_publisher.publish(event_msg)
+        self.get_logger().info("Published 'point' event to /detection_events topic.")
 
     def on_shutdown(self):
         self.get_logger().info("Shutting down node.")

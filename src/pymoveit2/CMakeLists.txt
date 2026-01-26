@@ -32,6 +32,7 @@ install(PROGRAMS
     ${EXAMPLES_DIR}/moveit_trajectory_listener.py
     ${EXAMPLES_DIR}/pick_and_place.py
     ${EXAMPLES_DIR}/pick_and_place_srv.py
+    ${EXAMPLES_DIR}/cleaning_sequence_moveit.py
     DESTINATION lib/${PROJECT_NAME}
 )
 
