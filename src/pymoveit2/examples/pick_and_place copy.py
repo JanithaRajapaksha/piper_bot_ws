@@ -25,25 +25,12 @@ class TfThenJointSequence(Node):
         # ----------------------------
         self.declare_parameter("target_frame", "clicked_point_frame")
         self.declare_parameter("base_frame", "base_link")
-        self.declare_parameter("quat_xyzw", [0.000, 0.786, -0.000, 0.619])
-        # self.declare_parameter("quat_xyzw", [0.000, 0.676, -0.000, 0.737])
+        # self.declare_parameter("quat_xyzw", [0.000, 0.786, -0.000, 0.619])
+        self.declare_parameter("quat_xyzw", [0.000, 0.676, -0.000, 0.737])
 
         self.target_frame = self.get_parameter("target_frame").value
         self.base_frame = self.get_parameter("base_frame").value
         self.quat_xyzw = self.get_parameter("quat_xyzw").value
-
-        # ----------------------------
-        # Motion tuning parameters (pose)
-        # ----------------------------
-        self.declare_parameter("tolerance_position", 0.001)
-        self.declare_parameter("tolerance_orientation", 0.01)
-        self.declare_parameter("weight_position", 0.5)
-        self.declare_parameter("weight_orientation", 0.0)
-
-        self.tolerance_position = self.get_parameter("tolerance_position").value
-        self.tolerance_orientation = self.get_parameter("tolerance_orientation").value
-        self.weight_position = self.get_parameter("weight_position").value
-        self.weight_orientation = self.get_parameter("weight_orientation").value
 
         # ----------------------------
         # Callback group
@@ -144,7 +131,7 @@ class TfThenJointSequence(Node):
             position = [
                 transform.transform.translation.x,
                 transform.transform.translation.y,
-                transform.transform.translation.z + 0.01,
+                transform.transform.translation.z + 0.0,
             ]
 
             # Optional override
@@ -154,10 +141,6 @@ class TfThenJointSequence(Node):
             self.arm.move_to_pose(
                 position=position,
                 quat_xyzw=self.quat_xyzw,
-                tolerance_position=self.tolerance_position,
-                tolerance_orientation=self.tolerance_orientation,
-                weight_position=self.weight_position,
-                weight_orientation=self.weight_orientation,
                 cartesian=False,
             )
             self.arm.wait_until_executed()
